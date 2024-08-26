@@ -1,0 +1,85 @@
+
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three/build/three.module.js';
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
+// サイズを指定
+//const width = 960;
+//const height = 540;
+
+// 画面サイズの取得
+const windowWidth = window.innerWidth;
+const windowHeight = window.innerHeight;
+
+// レンダラーを作成
+const canvasElement = document.querySelector("#canvas");
+const renderer = new THREE.WebGLRenderer({
+    canvas: canvasElement,
+});
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(windowWidth, windowHeight);
+
+renderer.setClearColor(0x000000, 0);
+
+// シーンを作成
+const scene = new THREE.Scene();
+
+const backgroundTexture  = new THREE.TextureLoader().load("./back.jpg");
+scene.background = backgroundTexture;
+
+// カメラを作成
+//const camera = new THREE.PerspectiveCamera(45, width / height, 10, 10000);
+const camera = new THREE.PerspectiveCamera(75, windowWidth / windowHeight, 0.1, 1000);
+
+
+// カメラの初期座標を設定
+camera.position.set(10, -2, 20);
+
+// カメラコントローラーを作成
+const controls = new OrbitControls(camera, canvasElement);
+controls.target.set(0, 0, 0);
+controls.update();
+
+// 環境光源を作成
+// new THREE.AmbientLight(色, 光の強さ)
+const ambientlight = new THREE.AmbientLight(0xFFFFFF, 2.0);
+scene.add(ambientlight);
+
+// 平行光源を作成
+// 上から照らす
+const directionalLight = new THREE.DirectionalLight(0xffffff);
+directionalLight.position.set(1, 1, 10);
+scene.add(directionalLight);
+
+// 横から照らす
+const directionalLight2 = new THREE.DirectionalLight(0xffffff);
+directionalLight2.position.set(1, 0, 10);
+scene.add(directionalLight2);
+
+
+// 点光源を作成
+// new THREE.PointLight(色, 光の強さ, 距離, 光の減衰率)
+const pointlight = new THREE.PointLight(0xFFFFFF, 10, 100, 10.0);
+scene.add(pointlight);
+
+// GLTF形式のモデルデータを読み込む
+const loader = new GLTFLoader();
+// GLTFファイルのパスを指定
+const gltf = await loader.loadAsync("/nod.glb");
+// 読み込み後に3D空間に追加
+const model = gltf.scene;
+scene.add(model);
+
+//model.scale.set(30, 30, 60);
+model.scale.set(1, 1, 1);
+
+
+
+tick();
+
+// 毎フレーム時に実行されるループイベントです
+function tick() {
+    // レンダリング
+    renderer.render(scene, camera);
+    requestAnimationFrame(tick);
+}
